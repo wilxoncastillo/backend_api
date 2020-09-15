@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendConfirmationEmail;
 
 class UserController extends Controller
 {
@@ -45,7 +47,10 @@ class UserController extends Controller
 	            'email' => $request->get('email'),
 	            'password' => bcrypt($request->get('password')),
 	            'api_token' => Str::random(60),
+	            'confirmation_code' => Str::random(60),
 	        ]);
+
+	        Mail::to($user)->queue(new SendConfirmationEmail($user));
 
 	        return response()->json($user, 201);
 		
@@ -72,4 +77,19 @@ class UserController extends Controller
 
         return response()->json(null, 204);
     }
+
+
+    public function verify($code)
+	{
+	    $user = User::where('confirmation_code', $code)->first();
+
+	    if (! $user)
+	        return redirect('/login');
+
+	    $user->email_verified_at = now();
+	    $user->confirmation_code = null;
+	    $user->save();
+
+	    return redirect('/login')->with('notification', $user->name . ' has confirmado correctamente tu correo!');
+	}
 }

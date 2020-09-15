@@ -9,6 +9,8 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendConfirmationEmail;
 
 class RegisterController extends Controller
 {
@@ -69,14 +71,19 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+
+        $user = User::create([
             'name' => $data['name'],
             'rut' => $data['rut'],
             'phone' => $data['phone'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'api_token' => Str::random(60),
+            'confirmation_code' => Str::random(60)
         ]);
 
+        Mail::to($user)->queue(new SendConfirmationEmail($user));
+        
+        return $user;
     }
 }
