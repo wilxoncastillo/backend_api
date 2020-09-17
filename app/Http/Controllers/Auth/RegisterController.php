@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -85,5 +86,13 @@ class RegisterController extends Controller
         Mail::to($user)->queue(new SendConfirmationEmail($user));
         
         return $user;
+    }
+
+    // trait RegistersUsers
+    // sobre escribe este metodo
+    protected function registered(Request $request, $user)
+    {
+        $this->guard()->logout();
+        return redirect('/login')->withNotification($user->name . ' te hemos enviado un link de activación a tu email');
     }
 }

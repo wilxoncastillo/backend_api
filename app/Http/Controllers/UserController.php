@@ -88,7 +88,8 @@ class UserController extends Controller
 
 	    $user->email_verified_at = now();
 	    $user->confirmation_code = null;
-	    $user->save();
+	    $user->active = true;
+        $user->save();
 
 	    return redirect('/login')->with('notification', $user->name . ' has confirmado correctamente tu correo!');
 	}
